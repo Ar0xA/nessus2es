@@ -1,0 +1,40 @@
+#config file example for nessus2es
+#using the config file overwrites ALL other cli commands
+
+[General]
+#input file in .nessus format
+#either this or Input need to be defined
+Input:
+
+# {both,vulnerability,compliance}
+Type: both
+
+# Do everything but actually send data to Zabbix
+# False = send data for real, True = do NOT send data
+Fake: False
+
+[elasticsearch]
+elasticsearchServer: 127.0.0.1
+elasticsearchPort: 10051
+
+[Nessus]
+NessusServer: 127.0.0.1
+NessusPort: 8834
+
+#either this or Input need to be defined
+NessusScanName: basic network scan no_creds
+
+#default empty
+NessusCAPath:
+
+#allow non trusted SSL certificates
+NessusInsecure:  True
+
+#where to find api information
+NessusKeyFile: ./nessus_api.key.json
+
+#where to store temporary scan file
+NessusTMP: /tmp
+
+NessusDeleteTMP: True
+
