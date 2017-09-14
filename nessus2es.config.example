@@ -15,7 +15,7 @@ Fake: False
 
 [elasticsearch]
 elasticsearchServer: 127.0.0.1
-elasticsearchPort: 10051
+elasticsearchPort: 9200
 
 [Nessus]
 NessusServer: 127.0.0.1
