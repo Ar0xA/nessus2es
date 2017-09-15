@@ -5,6 +5,14 @@ Tested with ElasticSearch 5 and Nessus 6 only!
 
 note: if you change the default indexname, be sure to apply the template to the new index too.
 
+# possible elastic queries
+- Show me all systems with CRITICAL vulnerabilities that have public exploits available.
+- Show me all compliance/vulnerability results of a system over a period of time.
+- Show me all systems with a CVSS score of 7 or higher.
+- Show me all systems of a certain OS where we log in locally to do vulnerability scanning.
+ - etc., etc.
+
+ 
 # example kibana output
 This quick graph shows a set of vulnerability and compliance scan results
 
