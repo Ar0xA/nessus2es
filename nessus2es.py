@@ -56,8 +56,8 @@ def download_nessus_report(args, keys):
             print "Did not find any scan to export. Maybe it wasn\'t done yet or be sure to check the scanname or API file and try again."
             sys.exit(1)
 
-#post data to elastic
-def post_to_ES(json_data,args):
+#check if index exists
+def ES_index_check (args,task_id):
   #what index to we need to post to?
   #can we reach the server?
   es_server =  args.elasticsearchserver
@@ -65,16 +65,44 @@ def post_to_ES(json_data,args):
   es_index = args.elasticsearchindex
   es_url = "http://" + es_server + ":" + str(es_port) + "/"
 
+  #construct indexname
+  es_index = es_index + "-" + task_id
+
   #test if index esists
   http = urllib3.PoolManager()
   r = http.request('HEAD', es_url+es_index)
+
+  #if index exists, there's already data from this task_id in ES. Quit
+  #if index DOES NOT exist, create it.
   if r.status == 404:
-      print "Sorry, index \"%s\" does not exist. You will have to create it manually" % (es_index)
+      print "Index \"%s\" does not exist. Creating it" % (es_index)
+      r = http.request('PUT', es_url +es_index)
+      if r.status == 200:
+          print "Index %s created" % (es_index)
+      else:
+          print "Creating index failed. I give up"
+          sys.exit(1)
+  elif r.status == 200:
+      print "Index already exists. Not inserting same data into this index unless you override"
+      print "TODO: create override"
       sys.exit(1)
   elif not r.status == 200:
       print "Something is wrong with the index, but i have no idea what. I give up!"
       print r.status
       sys.exit(1)
+
+#post data to elastic
+def post_to_ES(json_data,args, task_id):
+  #what index to we need to post to?
+  #can we reach the server?
+  es_server =  args.elasticsearchserver
+  es_port = args.elasticsearchport
+  es_index = args.elasticsearchindex
+  es_url = "http://" + es_server + ":" + str(es_port) + "/"
+
+  #construct indexname
+  es_index = es_index + "-" + task_id
+  http = urllib3.PoolManager()
 
   #index exists, lets post the data #yolo
   r = http.request('POST', es_url+es_index+"/vulnresult", headers={'Content-Type':'application/json'}, body=json_data)
@@ -89,6 +117,7 @@ def post_to_ES(json_data,args):
 # The optional ones have some which can be arrays
 
 def parse_to_json(nessus_xml_data, args):
+
     #some quick report checking
     data =ObjDict()
 
@@ -110,7 +139,18 @@ def parse_to_json(nessus_xml_data, args):
     else:
         print 'Found %i hosts' % (len(hosts))
 
-    print "Checking for results..."
+    #find the Task ID for uniqueness checking
+    #test: is this unique per RUN..or per task?
+    task_id = ""
+    tmp_prefs = nessus_xml_data.findAll('preference')
+    for pref in tmp_prefs:
+        if "report_task_id" in str(pref):
+            task_id = pref.value.get_text()
+
+    #ok we got the task ID; to be sure before anything else, lets see if the index already exists or not
+    ES_index_check (args, task_id)
+
+    print "Checking for results and posting to ElasticSearch. This might take a while..."
     for host in hosts:
         #lets iterate through the reportItem, here the compliance items will be
         reportItems = host.findAll('reportitem')
@@ -272,7 +312,7 @@ def parse_to_json(nessus_xml_data, args):
                 #print "Finding for %s complete, sending to ES" % (host_info.hostname)
                 json_data = host_info.dumps()
                 #print json_data
-                post_to_ES(json_data, args)
+                post_to_ES(json_data, args, task_id)
             except Exception as e:
                 print "Error:"
                 print e
