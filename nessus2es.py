@@ -181,6 +181,8 @@ def parse_to_json(nessus_xml_data, args):
             host_info.hostscanend = host.find('tag', attrs={'name': 'HOST_END'}).get_text()
             host_info.hostscanend = parse(host_info.hostscanend)
 
+            host_info["@timestamp"] = host_info.hostscanend
+
             #fqdn might be optional
             host_fqdn = host.find('tag', attrs={'name': 'host-fqdn'})
             if host_fqdn:
@@ -311,7 +313,7 @@ def parse_to_json(nessus_xml_data, args):
                 #we have all data in host_info, why not send that instead?
                 #print "Finding for %s complete, sending to ES" % (host_info.hostname)
                 json_data = host_info.dumps()
-                #print json_data
+                print json_data
                 post_to_ES(json_data, args, task_id)
             except Exception as e:
                 print "Error:"
