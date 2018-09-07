@@ -1,55 +1,12 @@
 {
   "order": 0,
-  "version": 50001,
-  "template": "nessusdata*",
-  "settings": {
-    "index": {
-      "refresh_interval": "5s"
-    }
-  },
+  "version": 2,
+  "index_patterns": [
+    "nessusdata-*"
+  ],
+  "settings": {},
   "mappings": {
     "_default_": {
-      "dynamic_templates": [
-        {
-          "message_field": {
-            "path_match": "message",
-            "mapping": {
-              "norms": false,
-              "type": "text"
-            },
-            "match_mapping_type": "string"
-          }
-        },
-        {
-          "string_fields": {
-            "mapping": {
-              "norms": false,
-              "type": "text",
-              "fields": {
-                "keyword": {
-                  "type": "keyword"
-                }
-              }
-            },
-            "match_mapping_type": "string",
-            "match": "*"
-          }
-        },
-        {
-          "date_fields": {
-            "mapping": {
-              "type": "date",
-              "doc_values": true
-            },
-            "match_mapping_type": "date",
-            "match": "*"
-          }
-        }
-      ],
-      "_all": {
-        "norms": false,
-        "enabled": true
-      },
       "properties": {
         "compliancereference": {
           "type": "text",
@@ -61,26 +18,13 @@
           }
         },
         "pluginname": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "ignore_above": 256,
-              "type": "keyword"
-            }
-          }
+          "type": "text"
         },
         "hostip": {
-          "type": "ip",
-          "fields": {}
+          "type": "ip"
         },
         "complianceresult": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "ignore_above": 256,
-              "type": "keyword"
-            }
-          }
+          "type": "text"
         },
         "description": {
           "type": "text",
@@ -105,13 +49,7 @@
           "type": "date"
         },
         "plugintype": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "ignore_above": 256,
-              "type": "keyword"
-            }
-          }
+          "type": "text"
         },
         "complianceseealso": {
           "type": "text",
@@ -123,22 +61,10 @@
           }
         },
         "hostname": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "ignore_above": 256,
-              "type": "keyword"
-            }
-          }
+          "type": "text"
         },
         "protocol": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "ignore_above": 256,
-              "type": "keyword"
-            }
-          }
+          "type": "text"
         },
         "pluginoutput": {
           "type": "text",
@@ -159,52 +85,22 @@
           }
         },
         "hostmacaddress": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "ignore_above": 256,
-              "type": "keyword"
-            }
-          }
+          "type": "text"
         },
         "compliancecheckname": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "ignore_above": 256,
-              "type": "keyword"
-            }
-          }
+          "type": "text"
         },
         "hostfqdn": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "ignore_above": 256,
-              "type": "keyword"
-            }
-          }
+          "type": "text"
         },
         "severity": {
           "type": "long"
         },
         "complianceauditfile": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "ignore_above": 256,
-              "type": "keyword"
-            }
-          }
+          "type": "text"
         },
         "riskfactor": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "ignore_above": 256,
-              "type": "keyword"
-            }
-          }
+          "type": "text"
         },
         "pluginid": {
           "type": "long"
@@ -219,13 +115,7 @@
           }
         },
         "svc_name": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "ignore_above": 256,
-              "type": "keyword"
-            }
-          }
+          "type": "text"
         },
         "@timestamp": {
           "format": "yyyy-MM-dd HH:mm:ss",
@@ -242,13 +132,7 @@
           "type": "boolean"
         },
         "pluginfamily": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "ignore_above": 256,
-              "type": "keyword"
-            }
-          }
+          "type": "text"
         },
         "hostscanend": {
           "format": "yyyy-MM-dd HH:mm:ss",

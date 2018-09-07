@@ -16,25 +16,3 @@ Fake: False
 [elasticsearch]
 elasticsearchServer: 127.0.0.1
 elasticsearchPort: 9200
-
-[Nessus]
-NessusServer: 127.0.0.1
-NessusPort: 8834
-
-#either this or Input need to be defined
-NessusScanName: basic network scan no_creds
-
-#default empty
-NessusCAPath:
-
-#allow non trusted SSL certificates
-NessusInsecure:  True
-
-#where to find api information
-NessusKeyFile: ./nessus_api.key.json
-
-#where to store temporary scan file
-NessusTMP: /tmp
-
-NessusDeleteTMP: True
-
