@@ -1,5 +1,6 @@
 # nessus2es
-Send your nessus compliance and vulnerability scan data to ElasticSearch.
+Send your nessus compliance and vulnerability scan data to ElasticSearch from a file.
+To download a file from Nessus without using an API (Nessus7) see https://github.com/Ar0xA/Nessus7proxy
 
 Tested with ElasticSearch 6 and Nessus 7 only!
 
