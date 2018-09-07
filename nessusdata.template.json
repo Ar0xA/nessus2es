@@ -2,7 +2,7 @@
   "order": 0,
   "version": 2,
   "index_patterns": [
-    "nessusdata-*"
+    "nessusdata*"
   ],
   "settings": {},
   "mappings": {
