@@ -2,6 +2,8 @@
 #and dumps the data into elasticsearc
 #
 #autor: @Ar0xA / ar0xa@tldr.nu
+#
+#note: assumes timezone on nessus scanner and this script are the same!
 
 from bs4 import BeautifulSoup
 
@@ -10,13 +12,14 @@ import sys
 import os
 import io
 import json
-import ConfigParser
-
+import configparser
 import urllib3
+import time
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 from objdict import ObjDict
 from dateutil.parser import parse
+from datetime import timedelta
 
 #check if index exists
 def ES_index_check (args,task_id):
@@ -37,20 +40,20 @@ def ES_index_check (args,task_id):
   #if index exists, there's already data from this task_id in ES. Quit
   #if index DOES NOT exist, create it.
   if r.status == 404:
-      print "Index \"%s\" does not exist. Creating it" % (es_index)
+      print ("Index \"%s\" does not exist. Creating it" % (es_index))
       r = http.request('PUT', es_url +es_index)
       if r.status == 200:
-          print "Index %s created" % (es_index)
+          print ("Index %s created" % (es_index))
       else:
-          print "Creating index failed. I give up"
+          print ("Creating index failed. I give up")
           sys.exit(1)
   elif r.status == 200:
-      print "Index already exists. Not inserting same data into this index unless you override"
-      print "TODO: create override"
+      print ("Index already exists. Not inserting same data into this index unless you override")
+      print ("TODO: create override")
       sys.exit(1)
   elif not r.status == 200:
-      print "Something is wrong with the index, but i have no idea what. I give up!"
-      print r.status
+      print ("Something is wrong with the index, but i have no idea what. I give up!")
+      print (r.status)
       sys.exit(1)
 
 #post data to elastic
@@ -69,7 +72,7 @@ def post_to_ES(json_data,args, task_id):
   #index exists, lets post the data #yolo
   r = http.request('POST', es_url+es_index+"/vulnresult", headers={'Content-Type':'application/json'}, body=json_data)
   if not r.status  == 201:
-    print "well, something went wrong, thats embarrasing"
+    print ("well, something went wrong, thats embarrasing")
     sys.exit(1)
 
 #here we parse results from the nessus file, we extract the vulnerabiltiy information
@@ -85,7 +88,7 @@ def parse_to_json(nessus_xml_data, args):
 
     tmp_scanname = nessus_xml_data.report['name']
     if len(tmp_scanname) == 0:
-        print 'Didn\'t find report name in file. is this a valid nessus file?'
+        print ('Didn\'t find report name in file. is this a valid nessus file?')
         sys.exit(1)
     else:
         data.scanname = tmp_scanname
@@ -96,10 +99,10 @@ def parse_to_json(nessus_xml_data, args):
     # see if there are any hosts that are reported on
     hosts = nessus_xml_data.findAll('reporthost')
     if len(hosts) == 0:
-        print 'Didn\'t find any hosts in file. Is this a valid nessus file?'
+        print ('Didn\'t find any hosts in file. Is this a valid nessus file?')
         sys.exit(1)
     else:
-        print 'Found %i hosts' % (len(hosts))
+        print ('Found %i hosts' % (len(hosts)))
 
     #find the Task ID for uniqueness checking
     #test: is this unique per RUN..or per task?
@@ -112,7 +115,7 @@ def parse_to_json(nessus_xml_data, args):
     #ok we got the task ID; to be sure before anything else, lets see if the index already exists or not
     ES_index_check (args, task_id)
 
-    print "Checking for results and posting to ElasticSearch. This might take a while..."
+    print ("Checking for results and posting to ElasticSearch. This might take a while...")
     for host in hosts:
         #lets iterate through the reportItem, here the compliance items will be
         reportItems = host.findAll('reportitem')
@@ -140,9 +143,13 @@ def parse_to_json(nessus_xml_data, args):
             host_info.hostscanstart = host.find('tag', attrs={'name': 'HOST_START'}).get_text()
             #convert to normal date format
             host_info.hostscanstart = parse(host_info.hostscanstart)
+            #convert to UTC time
+            timeoffset = int((time.localtime().tm_gmtoff)/3600)
+            host_info.hostscanstart =host_info.hostscanstart - timedelta(hours=timeoffset)
+
             host_info.hostscanend = host.find('tag', attrs={'name': 'HOST_END'}).get_text()
             host_info.hostscanend = parse(host_info.hostscanend)
-
+            host_info.hostscanend =  host_info.hostscanend - timedelta(hours=timeoffset)
             host_info["@timestamp"] = host_info.hostscanend
 
             #fqdn might be optional
@@ -273,14 +280,14 @@ def parse_to_json(nessus_xml_data, args):
                         host_info.xref.append(xref.get_text())
 
                 #we have all data in host_info, why not send that instead?
-                #print "Finding for %s complete, sending to ES" % (host_info.hostname)
+                #print ("Finding for %s complete, sending to ES" % (host_info.hostname))
                 json_data = host_info.dumps()
-                print json_data
+                #print (json_data)
                 post_to_ES(json_data, args, task_id)
             except Exception as e:
-                print "Error:"
-                print e
-                print rItem
+                print ("Error:")
+                print (e)
+                print (rItem)
                 sys.exit(1)
 
 def parse_args():
@@ -304,7 +311,7 @@ def parse_args():
 #replace args from config file instead
 def replace_args(args):
     if os.path.isfile(args.config):
-        print "Reading configuration from config file"
+        print ("Reading configuration from config file")
         Config = ConfigParser.ConfigParser()
         try:
             Config.read(args.config)
@@ -337,15 +344,15 @@ def main():
         nessus_scan_file = args.input
     else:
         nessus_scan_file = args.nessustmp + "/" + args.nessusscanname
-    print "Nessus file to parse is %s" % (nessus_scan_file)
+    print ("Nessus file to parse is %s" % (nessus_scan_file))
 
     # read the file..might be big though...
     with open(nessus_scan_file, 'r') as f:
-        print 'Parsing file %s as xml into memory, hold on...' % (args.input)
+        print ('Parsing file %s as xml into memory, hold on...' % (args.input))
         nessus_xml_data = BeautifulSoup(f.read(), 'lxml')
 
     parse_to_json(nessus_xml_data, args)
 
 if __name__ == "__main__":
   main()
-  print "Done."
+  print ("Done.")
