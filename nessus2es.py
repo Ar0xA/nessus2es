@@ -113,7 +113,8 @@ def parse_to_json(nessus_xml_data, args):
             task_id = pref.value.get_text()
 
     #ok we got the task ID; to be sure before anything else, lets see if the index already exists or not
-    ES_index_check (args, task_id)
+    if not args.fake:
+        ES_index_check (args, task_id)
 
     print ("Checking for results and posting to ElasticSearch. This might take a while...")
     for host in hosts:
@@ -122,12 +123,10 @@ def parse_to_json(nessus_xml_data, args):
         for rItem in reportItems:
             host_info = ObjDict()
             #host_info.reportfindings = []
-
             #lets get the host information
             host_info.hostname = host['name']
 
             host_info.hostip = host.find('tag', attrs={'name': 'host-ip'}).get_text()
-
             macaddress = host.find('tag', attrs={'name': 'mac-address'})
             if macaddress:
                 host_info.hostmacaddress = macaddress.get_text()
@@ -172,6 +171,7 @@ def parse_to_json(nessus_xml_data, args):
                 host_info.pluginfamily = rItem['pluginfamily']
                 host_info.riskfactor = rItem.find('risk_factor').get_text()
                 agent = rItem.find('agent')
+
                 if agent:
                     host_info.agent = agent.get_text()
                 else:
@@ -190,13 +190,43 @@ def parse_to_json(nessus_xml_data, args):
                 host_info.complianceresult = None
                 host_info.compliancereference = None
                 host_info.complianceseealso = None
-                if host_info.compliance:
-                    host_info.complianceauditfile = rItem.find('cm:compliance-audit-file').get_text()
-                    host_info.compliancecheckname = rItem.find('cm:compliance-check-name').get_text()
-                    host_info.complianceinfo = rItem.find('cm:compliance-info').get_text()
-                    host_info.complianceresult = rItem.find('cm:compliance-result').get_text()
-                    host_info.compliancereference = rItem.find('cm:compliance-reference').get_text()
-                    host_info.complianceseealso = rItem.find('cm:compliance-see-also').get_text()
+
+
+                comaudit = rItem.find('cm:compliance-audit-file')
+                if comaudit:
+                    host_info.complianceauditfile =  comaudit.get_text()
+                else:
+                   host_info.complianceauditfile = None
+
+                comcheck = rItem.find('cm:compliance-check-name')
+                if comcheck:
+                    host_info.compliancecheckname =  comcheck.get_text()
+                else:
+                   host_info.compliancecheckname = None
+
+                cominfo = rItem.find('cm:compliance-info')
+                if cominfo:
+                    host_info.complianceinfo =  cominfo.get_text()
+                else:
+                   host_info.complianceinfo = None
+
+                comsee = rItem.find('cm:compliance-see-also')
+                if comsee:
+                    host_info.complianceseealso =  comsee.get_text()
+                else:
+                   host_info.complianceseealso = None
+
+                comref = rItem.find('cm:compliance-reference')
+                if comref:
+                    host_info.compliancereference =  comref.get_text()
+                else:
+                   host_info.compliancereference = None
+
+                comres = rItem.find('cm:compliance-result')
+                if comres:
+                    host_info.complianceresult =  comres.get_text()
+                else:
+                   host_info.complianceresult = None
 
                 descrip = rItem.find('description')
                 if descrip:
@@ -283,7 +313,8 @@ def parse_to_json(nessus_xml_data, args):
                 #print ("Finding for %s complete, sending to ES" % (host_info.hostname))
                 json_data = host_info.dumps()
                 #print (json_data)
-                post_to_ES(json_data, args, task_id)
+                if not args.fake:
+                    post_to_ES(json_data, args, task_id)
             except Exception as e:
                 print ("Error:")
                 print (e)
