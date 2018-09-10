@@ -5,6 +5,7 @@ To download a file from Nessus without using an API (Nessus7) see https://github
 Tested with ElasticSearch 6 and Nessus 7 only!
 
 note: if you change the default indexname, be sure to apply the template to the new index too.
+
 note: assumes the timezone of your nessus server is the same timezone this script runs in
 
 #required
