@@ -7,13 +7,75 @@
   "settings": {},
   "mappings": {
     "_default_": {
+      "dynamic_templates": [
+        {
+          "string_as_keyword": {
+            "match_mapping_type": "string",
+            "mapping": {
+              "type": "keyword",
+              "doc_values": "true"
+            }
+          }
+        }
+      ],
       "properties": {
         "compliancereference": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "ignore_above": 256,
-              "type": "keyword"
+          "properties": {
+            "800-53": {
+              "type": "keyword",
+              "doc_values": "true"
+            },
+            "ISO/IEC-27001": {
+              "type": "keyword",
+              "doc_values": "true"
+            },
+            "PCI-DSSv3.1": {
+              "type": "keyword",
+              "doc_values": "true"
+            },
+            "PCI-DSSv3.2": {
+              "type": "keyword",
+              "doc_values": "true"
+            },
+            "800-171": {
+              "type": "keyword",
+              "doc_values": "true"
+            },
+            "CSF": {
+              "type": "keyword",
+              "doc_values": "true"
+            },
+            "ITSG-33": {
+              "type": "keyword",
+              "doc_values": "true"
+            },
+            "SWIFT-CSCv1": {
+              "type": "keyword",
+              "doc_values": "true"
+            },
+            "CSCv6": {
+              "type": "keyword",
+              "doc_values": "true"
+            },
+            "TBA-FIISB": {
+              "type": "keyword",
+              "doc_values": "true"
+            },
+            "CN-L3": {
+              "type": "keyword",
+              "doc_values": "true"
+            },
+            "SIP": {
+              "type": "keyword",
+              "doc_values": "true"
+            },
+            "HIPAA": {
+              "type": "keyword",
+              "doc_values": "true"
+            },
+            "LEVEL": {
+              "type": "keyword",
+              "doc_values": "true"
             }
           }
         },

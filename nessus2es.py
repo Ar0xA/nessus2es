@@ -73,6 +73,7 @@ def post_to_ES(json_data,args, task_id):
   r = http.request('POST', es_url+es_index+"/vulnresult", headers={'Content-Type':'application/json'}, body=json_data)
   if not r.status  == 201:
     print ("well, something went wrong, thats embarrasing")
+    
     sys.exit(1)
 
 #here we parse results from the nessus file, we extract the vulnerabiltiy information
@@ -188,7 +189,7 @@ def parse_to_json(nessus_xml_data, args):
                 host_info.complianceauditfile = None
                 host_info.complianceinfo = None
                 host_info.complianceresult = None
-                host_info.compliancereference = None
+                #host_info.compliancereference = None
                 host_info.complianceseealso = None
 
 
@@ -217,8 +218,16 @@ def parse_to_json(nessus_xml_data, args):
                    host_info.complianceseealso = None
 
                 comref = rItem.find('cm:compliance-reference')
+                #host_info.compliancereference['LEVEL']= ObjDict()
+
                 if comref:
-                    host_info.compliancereference =  comref.get_text()
+                    host_info.compliancereference = ObjDict()
+
+                    compliancereference =  comref.get_text().split(",")
+                    for ref in compliancereference:
+                        comprefsplit = ref.split("|")
+                        host_info.compliancereference[comprefsplit[0]] = ObjDict()
+                        host_info.compliancereference[comprefsplit[0]] =comprefsplit[1]
                 else:
                    host_info.compliancereference = None
 
